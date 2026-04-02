@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Monitor Manager
+Name[pt_BR]=Gerenciador de Monitores
+Comment=Configure displays for Hyprland
+Comment[pt_BR]=Configure monitores no Hyprland
+Exec=hypr-monitor-manager
+Icon=preferences-desktop-display
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=monitor;display;screen;hyprland;resolution;
