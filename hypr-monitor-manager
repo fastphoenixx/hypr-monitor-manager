@@ -573,8 +573,39 @@ class SettingsPanel(Gtk.Box):
     def _on_rot(self, combo, _p):
         if self._loading or not self.monitor:
             return
-        self.monitor["transform"] = combo.get_selected()
+        mon = self.monitor
+        old_sw, old_sh = screen_dims(mon)
+        mon["transform"] = combo.get_selected()
+        new_sw, new_sh = screen_dims(mon)
+        if old_sw != new_sw or old_sh != new_sh:
+            self._reposition_after_transform(mon, old_sw, old_sh, new_sw, new_sh)
+            self._loading = True
+            self._pos_x.set_value(mon["x"])
+            self._pos_y.set_value(mon["y"])
+            self._loading = False
         self.win.canvas.refresh_draw()
+
+    def _reposition_after_transform(self, mon, old_sw, old_sh, new_sw, new_sh):
+        """Mantém o encaixe com monitores adjacentes após mudança de rotação."""
+        ox, oy = mon["x"], mon["y"]
+        nx, ny = ox, oy
+        for other in self.win.monitors:
+            if other is mon:
+                continue
+            ow, oh = screen_dims(other)
+            # Borda direita encostada na borda esquerda de outro
+            if abs((ox + old_sw) - other["x"]) < 5:
+                nx = other["x"] - new_sw
+            # Borda esquerda encostada na borda direita de outro
+            elif abs(ox - (other["x"] + ow)) < 5:
+                nx = other["x"] + ow
+            # Borda inferior encostada na borda superior de outro
+            if abs((oy + old_sh) - other["y"]) < 5:
+                ny = other["y"] - new_sh
+            # Borda superior encostada na borda inferior de outro
+            elif abs(oy - (other["y"] + oh)) < 5:
+                ny = other["y"] + oh
+        mon["x"], mon["y"] = nx, ny
 
     def _on_scale(self, spin):
         if self._loading or not self.monitor:
